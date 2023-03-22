@@ -1,0 +1,149 @@
+package app;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+import java.util.Scanner;
+
+
+import entites.Consulta;
+import entites.Medico;
+import entites.Paciente;
+
+
+public class Main {
+
+	public static void main(String[] args) throws ParseException {
+		String choice = "";
+		SimpleDateFormat formato = new SimpleDateFormat("dd/MM/yyyy");
+		ArrayList <Medico> listM = new ArrayList <Medico>();
+		ArrayList <Paciente> listP = new ArrayList <Paciente>();
+		ArrayList <Consulta> listC = new ArrayList <Consulta>();
+		while (!choice.equals("0")) {
+			
+			Scanner sc = new Scanner(System.in);
+			
+			System.out.println("1 - Cadastro de Médicos\n"
+					+ 		   "2 - Cadastro de Pacientes\n"
+					+ 	       "3 - Cadastro de Consultas\n"
+					+ 	       "4 - Cancelamento de Consultas\n"
+					+ 		   "5 - Relatório Financeiro\n"
+					+ 		   "0 - Sair\n");
+			System.out.print("Coice: ");			
+			choice = sc.next();
+			
+			if (choice.equals("1"))	{
+				Medico medico = new Medico();
+				System.out.print("CRM: ");			
+				medico.setCrm(sc.nextInt());
+				
+				System.out.print("Nome: ");
+				medico.setName(sc.next());
+				
+				System.out.print("Data de nascimento [dd/MM/yyyy]: ");
+				medico.setDateNascimento(formato.parse(sc.next()));
+				medico.setDateCadastro(LocalDate.now());
+				
+				listM.add(medico);
+				
+			} else if (choice.equals("2")){
+				Paciente paciente = new Paciente();
+				System.out.print("CPF: ");
+				paciente.setCpf(sc.nextInt());
+				
+				System.out.print("Nome: ");
+				paciente.setName(sc.next());
+				
+				System.out.print("Data de nascimento [dd/MM/yyyy]: ");
+				paciente.setDateNascimento(formato.parse(sc.next()));	
+				paciente.setDateCadastro(LocalDate.now());
+				
+				System.out.print("Endereço: ");
+				paciente.setEndereco(sc.next());
+				listP.add(paciente);
+				
+			} else if (choice.equals("3")) {
+				if (listM.size() == 0 || listP.size() == 0) {
+					System.out.println("Não existe médicos ou pacientes cadastrados no sistema!");
+				}else {
+					Consulta consulta = new Consulta();
+					int countM = 1;
+					for (Medico medico : listM) {				
+						System.out.println(countM + " - " + medico.toString());
+						countM += 1;
+					}
+					System.out.print("Qual médico deseja escolher? ");
+					consulta.setMedico(listM.get(sc.nextInt()-1));
+					int countP = 1;
+					for (Paciente paciente : listP) {
+						
+						System.out.println(countP + " - " + paciente.toString());
+						countP += 1;
+					}
+					System.out.print("Qual paciente deseja escolher? ");
+					int escolha = sc.nextInt()-1;
+					consulta.setPaciente(listP.get(escolha));
+					
+					System.out.print("Informe a data da consulta: ");				
+					consulta.setDateConsulta(sc.next());
+					
+					System.out.print("Informe a hora da consulta: ");
+					consulta.setHoraConsulta(sc.next());
+					
+					System.out.print("Primeira consulta [Sim/Nao]? ");
+					String first = sc.next();
+					consulta.setFirstConsulta(first);
+					if (first.intern() == "Sim") {
+						consulta.setValorConsulta(350.0);
+					}else consulta.setValorConsulta(300.0);
+					consulta.setStatusConsulta("Agendado");
+					System.out.println(consulta.toString());						
+					var paciente = listP.get(escolha);
+					listC.add(consulta);								
+					paciente.setConsulta((ArrayList<Consulta>) listC.clone());
+				}	
+				
+			}else if (choice.equals("4")) {
+				System.out.print("CPF do paciente: ");
+				int cpf = sc.nextInt();				
+				System.out.print("Data da consulta: ");
+				String data = sc.next();
+				System.out.print("CRM do médico: ");
+				int crm = sc.nextInt();
+				
+				for (Paciente paciente : listP) {					
+					if (paciente.getCpf() == cpf) {												
+						paciente.removeConsulta(data, crm);		
+						System.out.println("Consulta removida!");							
+					}					
+				}				
+				for (Consulta consulta : listC) {
+					if (consulta.getMedico().getCrm() == crm && consulta.getPaciente().getCpf() == cpf && consulta.getDateConsulta().intern() == data.intern()) {
+						consulta.setStatusConsulta("Cancelado");
+						System.out.println(consulta.toString()); 
+					}
+				}
+				
+			}else if (choice.equals("5")) {
+				System.out.print("Data: ");
+				String data = sc.next();
+				double total = 0;
+				for (Consulta consulta : listC) {
+					if (consulta.getDateConsulta().intern() == data.intern() && consulta.getStatusConsulta().intern() == "Agendado".intern()) {
+						System.out.println(consulta.toString());
+						total += consulta.getValorConsulta();
+					}					
+				}
+				System.out.println("Valor total: " + total);
+				
+				
+			}
+			sc.close();
+		}
+		
+	}
+
+}
+
